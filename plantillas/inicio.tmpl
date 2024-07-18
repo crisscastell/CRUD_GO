@@ -1,0 +1,35 @@
+{{define "inicio"}}
+
+{{template "cabecera"}}
+    
+    <a name="" id="" class="btn btn-primary" href="/crear" role="button">agregar trabajador</a>
+
+
+    <table class="table">
+        <thead>
+
+            <tr>
+                <th>ID</th>
+                <th>NOMBRE</th>
+                <th>APELLIDO</th>
+                <th>CORREO</th>
+                <th>ACCIONES</th>
+            </tr>
+
+        </thead>
+    
+        <tbody>
+    {{range.}}
+            <tr>
+                <td>{{.id}}</td>
+                <td>{{.nombre}}</td>
+                <td>{{.apellido}}</td>
+                <td>{{.correo}}</td>
+                <td>editar {{.id}}| borrar {{.id}}</td>
+            </tr>
+    {{end}}
+        </tbody>
+    
+    </table>
+{{template "pie"}}
+{{end}}
