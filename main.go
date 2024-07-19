@@ -11,12 +11,12 @@ import (
 )
 
 func conexionBD() (conexion *sql.DB) {
-	driver := "mysql"
-	usuario := "root"
-	contrasenia := ""
-	nombre := "sistema"
+	Driver := "mysql"
+	Usuario := "root"
+	Contrasenia := ""
+	Nombre := "sistema"
 
-	conexion, err := sql.Open(driver, usuario+":"+contrasenia+"@tcp(127.0.0.1)/"+nombre)
+	conexion, err := sql.Open(Driver, Usuario+":"+Contrasenia+"@tcp(127.0.0.1)/"+Nombre)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -29,16 +29,33 @@ func main() {
 	http.HandleFunc("/", inicio)
 	http.HandleFunc("/crear", crear)
 	http.HandleFunc("/insertar", insertar)
-
+	http.HandleFunc("/borrar", borrar)
+	http.HandleFunc("/editar", editar)
+	http.HandleFunc("/actualizar", actualizar)
 	fmt.Println("Servidor corriendo...")
 	http.ListenAndServe(":8080", nil)
 }
 
+func borrar(w http.ResponseWriter, r *http.Request) {
+	idTrabajador := r.URL.Query().Get("id")
+	fmt.Println(idTrabajador)
+
+	conexionEstablecida := conexionBD()
+	borrarRegistro, err := conexionEstablecida.Prepare("DELETE FROM trabajadores WHERE id=?")
+
+	if err != nil {
+		panic(err.Error())
+	}
+	borrarRegistro.Exec(idTrabajador)
+	http.Redirect(w, r, "/", 301)
+
+}
+
 type Trabajador struct {
-	id       int
-	nombre   string
-	apellido string
-	correo   string
+	Id       int
+	Nombre   string
+	Apellido string
+	Correo   string
 }
 
 func inicio(w http.ResponseWriter, r *http.Request) {
@@ -61,21 +78,55 @@ func inicio(w http.ResponseWriter, r *http.Request) {
 			panic(err.Error())
 		}
 
-		trabajador.id = id
-		trabajador.nombre = nombre
-		trabajador.apellido = apellido
-		trabajador.correo = correo
+		trabajador.Id = id
+		trabajador.Nombre = nombre
+		trabajador.Apellido = apellido
+		trabajador.Correo = correo
 
 		arregloTrabajador = append(arregloTrabajador, trabajador)
 	}
-	fmt.Println(arregloTrabajador[0].nombre)
-	fmt.Print(plantillas)
+	//fmt.Println(arregloTrabajador)
 
 	plantillas.ExecuteTemplate(w, "inicio", arregloTrabajador)
+
 }
+
+func editar(w http.ResponseWriter, r *http.Request) {
+	idTrabajador := r.URL.Query().Get("id")
+	fmt.Println(idTrabajador)
+
+	conexionEstablecida := conexionBD()
+	registro, err := conexionEstablecida.Query("SELECT * FROM trabajadores WHERE id=?", idTrabajador)
+
+	trabajador := Trabajador{}
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for registro.Next() {
+		var id int
+		var nombre, apellido, correo string
+		err = registro.Scan(&id, &nombre, &apellido, &correo)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		trabajador.Id = id
+		trabajador.Nombre = nombre
+		trabajador.Apellido = apellido
+		trabajador.Correo = correo
+	}
+
+	fmt.Println(trabajador)
+	plantillas.ExecuteTemplate(w, "editar", trabajador)
+}
+
 func crear(w http.ResponseWriter, r *http.Request) {
 	plantillas.ExecuteTemplate(w, "crear", nil)
 }
+
 func insertar(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 
@@ -90,6 +141,27 @@ func insertar(w http.ResponseWriter, r *http.Request) {
 			panic(err.Error())
 		}
 		insertarRegistros.Exec(nombre, apellido, correo)
+		http.Redirect(w, r, "/", 301)
+
+	}
+}
+
+func actualizar(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+
+		id := r.FormValue("id")
+		nombre := r.FormValue("nombre")
+		apellido := r.FormValue("apellido")
+		correo := r.FormValue("correo")
+
+		conexionEstablecida := conexionBD()
+
+		modificarRegistros, err := conexionEstablecida.Prepare("UPDATE trabajadores SET nombre=?, apellido=?, correo=? WHERE id=?")
+
+		if err != nil {
+			panic(err.Error())
+		}
+		modificarRegistros.Exec(nombre, apellido, correo, id)
 		http.Redirect(w, r, "/", 301)
 
 	}

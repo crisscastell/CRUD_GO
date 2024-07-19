@@ -1,8 +1,13 @@
 {{define "inicio"}}
 
 {{template "cabecera"}}
+
+
+<br/><br/>
+<center><h1>TRABAJADORES EMPRESA</h1></center>
     
-    <a name="" id="" class="btn btn-primary" href="/crear" role="button">agregar trabajador</a>
+    <center><a name="" id="" class="btn btn-primary" href="/crear" role="button">agregar trabajador</a><center/>
+<br/><br/>
 
 
     <table class="table">
@@ -21,11 +26,15 @@
         <tbody>
     {{range.}}
             <tr>
-                <td>{{.id}}</td>
-                <td>{{.nombre}}</td>
-                <td>{{.apellido}}</td>
-                <td>{{.correo}}</td>
-                <td>editar {{.id}}| borrar {{.id}}</td>
+                <td>{{.Id}}</td>
+                <td>{{.Nombre}}</td>
+                <td>{{.Apellido}}</td>
+                <td>{{.Correo}}</td>
+                <td><a name="" id="" class="btn btn-warning" href="/editar?id={{.Id}}" role="button">Editar</a>
+                | 
+                <a name="" id="" class="btn btn-danger" href="/borrar?id={{.Id}}" role="button">Borrar</a>
+                </td>
+
             </tr>
     {{end}}
         </tbody>
